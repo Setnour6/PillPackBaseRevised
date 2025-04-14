@@ -14,4 +14,4 @@ This assumes you know how Git and GitHub work and that you have experience with 
 
 # Licensing and Publicity
 
-All rights reserved. The original creators of the pill pack bases can request changes or takedown of this repository if infringements happen, though it is best to discuss changes and proposals first.
+All rights reserved. Full credits go to Parakeet and Geozek for their work on the original pill pack bases.
