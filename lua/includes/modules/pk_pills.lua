@@ -99,7 +99,6 @@ local function errorMsg(...)
     return MsgC(error_color, "ERROR: ", ..., "\n")
 end
 
-
 -- Pill Registration
 local forms = {}
 
@@ -135,26 +134,21 @@ end
 
 local function fixParent(name)
     local t = forms[name]
-    if t.parent == name then
-        errorMsg("Tried to self-inherit '" .. name .. "' pill! Please verify the parent value in this pill.")
-        return
-    end
     local t_parent = forms[t.parent]
 
-    if t_parent and t_parent.parent then
+    if t_parent.parent then
         fixParent(t.parent)
     end
 
     t_parent = forms[t.parent]
 
-    if not t_parent then
-        errorMsg("Tried to inherit pill from non-existant '" .. t.parent .. "'. Make sure you register the parent first.")
-        return
+    if t_parent then
+        t_parent = table.Copy(t_parent)
+        forms[name] = table.Merge(t_parent, t)
+        t.parent = nil
+    else
+        print("Tried to inherit pill from non-existant '" .. t.parent .. "'. Make sure you register the parent first.")
     end
-
-    t_parent = table.Copy(t_parent)
-    forms[name] = table.Merge(t_parent, t)
-    t.parent = nil
 end
 
 function getPillTable(typ)
@@ -636,7 +630,7 @@ if SERVER then
         t = forms[name]
 
         if not t then
-            errorMsg("Player '" .. ply:Name() .. "' attempted to use nonexistent pill '" .. name .. "'.")
+            print("Player '" .. ply:Name() .. "' attempted to use nonexistent pill '" .. name .. "'.")
             ply:PrintMessage(HUD_PRINTCONSOLE, "Attempted to use nonexistent pill '" .. name .. "'.")
 
             return
@@ -739,10 +733,6 @@ if SERVER then
             if mode ~= "force" then
                 locked = true
             end
-        end
-
-        if not IsValid(old)  then
-            ply._ppp_original_health = ply:Health()
         end
 
         local e
@@ -850,9 +840,6 @@ function restore(ply, breakout)
             else
                 ent.notDead = true
                 ent:Remove()
-                local health = player_manager.GetPlayerClasses()[player_manager.GetPlayerClass(ply)].StartHealth
-                ply:SetMaxHealth(health)
-                ply:SetHealth(ply._ppp_original_health or health)
             end
 
             if not breakout then
@@ -986,7 +973,7 @@ if SERVER then
             return false
         end
     end)
-
+	
     hook.Add("PlayerCanPickupWeapon", "pk_pill_pickupWeapon", function(ply, wep)
         if IsValid(getMappedEnt(ply)) then
             if getMappedEnt(ply).formTable.type == "ply" then
@@ -1025,22 +1012,21 @@ if SERVER then
         end
     end)
     --For compatibility with player resizer and God knows what else
-    --[[
 	hook.Add("SetPlayerSpeed", "pk_pill_speed_enforcer", function(ply,walk,run)
 		if IsValid(getMappedEnt(ply)) then
 			return false
 		end
 	end)
 
-	hook.Add("PlayerStepSoundTime", "pk_pill_step_time", function(ply,type,walking)    MEH!!
-		local ent = playerMap[ply]
-		if IsValid(ent) then
-			//if ent.formTable.stepSize then
-
-			//end
-			return 100
-		end
-	end)]]
+--	hook.Add("PlayerStepSoundTime", "pk_pill_step_time", function(ply,type,walking)
+--		local ent = playerMap[ply]
+--		if IsValid(ent) then
+--			//if ent.formTable.stepSize then
+--
+--			//end
+--			return 100
+--		end
+--	end)
 else -- CLIENT HOOKS
     hook.Add("HUDPaint", "pk_pill_hud", function()
         if pk_pills.convars.cl_hidehud:GetBool() then return end
@@ -1114,7 +1100,7 @@ else -- CLIENT HOOKS
         if IsValid(LocalPlayer()) then
             local trent = LocalPlayer():GetEyeTraceNoCursor().Entity
 
-            if (IsValid(trent) and trent:GetClass() == "pill_ent_phys" and trent.GetPillUser) then
+            if (IsValid(trent) and trent:GetClass() == "pill_ent_phys") then
                 local pillowner = trent:GetPillUser()
 
                 if IsValid(pillowner) and pillowner ~= LocalPlayer() then
@@ -1171,7 +1157,7 @@ hook.Add("SetupMove", "pk_pill_movemod", function(ply, mv, cmd)
             local vel = mv:GetVelocity()
 
             if ent:GetChargeTime() + .1 < CurTime() and vel:Length() < charge.vel * .8 then
-                --print("uncharge")
+                print("uncharge")
                 ent:SetChargeTime(0)
                 ent:PillLoopStop("charge")
             else
