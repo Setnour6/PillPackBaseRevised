@@ -16,7 +16,7 @@ function ENT:Initialize()
     local ply = self:GetPillUser()
 
     if not self.formTable or not IsValid(ply) then
-        if SERVER then self:Remove() end
+        self:Remove()
 
         return
     end
@@ -306,8 +306,8 @@ function ENT:Think()
 
     if SERVER then
         --Anims
-        local anims = table.Copy(self.formTable.anims and self.formTable.anims.default or {})
-        table.Merge(anims, (IsValid(ply:GetActiveWeapon()) and self.formTable.anims[ply:GetActiveWeapon():GetHoldType()]) or (self.forceAnimSet and self.formTable.anims and self.formTable.anims[self.forceAnimSet]) or {})
+        local anims = table.Copy(self.formTable.anims.default or {})
+        table.Merge(anims, (IsValid(ply:GetActiveWeapon()) and self.formTable.anims[ply:GetActiveWeapon():GetHoldType()]) or (self.forceAnimSet and self.formTable.anims[self.forceAnimSet]) or {})
         local anim
         --local useSeqVel=true
         local overrideRate
@@ -673,7 +673,7 @@ function ENT:Think()
         puppet:SetRenderOrigin(ply:GetPos())
     end
 
-    if vel > 0 or math.abs(math.AngleDifference(puppet:GetAngles().y, ply:EyeAngles().y)) > 60 then
+    if vel > 0 or math.abs(math.AngleDifference(puppet:GetAngles().y, ply:EyeAngles().y)) > 350 then
         local angs = ply:EyeAngles()
         angs.p = 0
 
