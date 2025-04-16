@@ -13,6 +13,13 @@ end
 
 function ENT:Initialize()
     self.formTable = pk_pills.getPillTable(self:GetPillForm())
+    if pk_pills.convars.admin_delayattack and pk_pills.convars.admin_delayattack:GetBool() then
+        timer.Simple(5, function() if IsValid(self) then self.CanAttack = true end end )
+        timer.Simple(30, function() if IsValid(self) then self.CanAttack2 = true end end )
+    else
+        self.CanAttack = true
+        self.CanAttack2 = true
+    end
     local ply = self:GetPillUser()
 
     if not self.formTable or not IsValid(ply) then
@@ -26,6 +33,7 @@ function ENT:Initialize()
     ply:SetHull(-Vector(hull.x / 2, hull.y / 2, 0), Vector(hull.x / 2, hull.y / 2, hull.z))
     ply:SetHullDuck(-Vector(hull.x / 2, hull.y / 2, 0), Vector(hull.x / 2, hull.y / 2, hull.z - duckBy or 0))
     ply:SetRenderMode(RENDERMODE_NONE)
+	ply:SetNWBool("InPill", true)
     --Do this so weapon equips are not blocked
     pk_pills.mapEnt(ply, nil)
 
@@ -57,18 +65,49 @@ function ENT:Initialize()
         ply:SetViewOffset(camOffset)
         ply:SetViewOffsetDucked(camOffset - Vector(0, 0, duckBy))
         local speed = self.formTable.moveSpeed or {}
-        ply:SetWalkSpeed(speed.walk or 200)
-        ply:SetRunSpeed(speed.run or speed.walk or 500)
-
-        if speed.ducked then
-            ply:SetCrouchedWalkSpeed(speed.ducked / (speed.walk or 200))
-        elseif duckBy == 0 then
-            ply:SetCrouchedWalkSpeed(1)
+        local realspeed
+        if pk_pills.convars.admin_globalspeed and pk_pills.convars.admin_globalspeed:GetBool() then
+            timer.Simple(6, function()
+                if ply:GetNWInt("InPill") == true then
+                    realspeed = 540
+                    ply:SetRunSpeed( realspeed )
+                    ply:SetMaxSpeed( realspeed )
+                    ply:SetWalkSpeed( 140 )
+                end
+            end )
         else
-            ply:SetCrouchedWalkSpeed(.3)
+            ply:SetWalkSpeed(speed.walk + 50 or 200)
+            ply:SetRunSpeed(speed.run + 100 or speed.walk or 500)
+        end
+        function GetRealPillSpeed()
+            return realspeed
         end
 
-        ply:SetJumpPower(self.formTable.jumpPower or 200)
+        if speed.ducked then
+            if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
+                ply:SetCrouchedWalkSpeed(0.4)
+            else
+                ply:SetCrouchedWalkSpeed(speed.ducked / (speed.walk or 200))
+            end
+        elseif duckBy == 0 then
+            if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
+                ply:SetCrouchedWalkSpeed(0.4)
+            else
+                ply:SetCrouchedWalkSpeed(1)
+            end
+        else
+            if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
+                ply:SetCrouchedWalkSpeed(0.4)
+            else
+                ply:SetCrouchedWalkSpeed(.3)
+            end
+        end
+
+        if pk_pills.convars.admin_globaljumppower and pk_pills.convars.admin_globaljumppower:GetBool() then
+            ply:SetJumpPower(4)
+        else
+            ply:SetJumpPower(self.formTable.jumpPower or 200)
+        end
         self.loopingSounds = {}
 
         if self.formTable.sounds then
@@ -244,10 +283,13 @@ end
 
 function ENT:OnRemove()
     local ply = self:GetPillUser()
-
+	
+    
     if SERVER then
         self:PillLoopStopAll()
     end
+	if not IsValid(ply) then return end
+	ply:SetNWBool("InPill", false)
 
     local newType = pk_pills.unmapEnt(self:GetPillUser(), self)
 
@@ -318,13 +360,17 @@ function ENT:Think()
         end
 
         if self.animFreeze and not self.plyFrozen then
-            ply:SetWalkSpeed(ply:GetWalkSpeed() / 2)
-            ply:SetRunSpeed(ply:GetWalkSpeed() / 2)
+            if pk_pills.convars.admin_debug_animfreezespeed and pk_pills.convars.admin_debug_animfreezespeed:GetBool() then
+                ply:SetWalkSpeed(ply:GetWalkSpeed() / 2)
+                ply:SetRunSpeed(ply:GetWalkSpeed() / 2)
+            end
             self.plyFrozen = true
         elseif not self.animFreeze and self.plyFrozen then
             local speed = self.formTable.moveSpeed or {}
-            ply:SetWalkSpeed(speed.walk or 200)
-            ply:SetRunSpeed(speed.run or speed.walk or 500)
+            if pk_pills.convars.admin_debug_animfreezespeed and pk_pills.convars.admin_debug_animfreezespeed:GetBool() then
+                ply:SetWalkSpeed(speed.walk or 200)
+                ply:SetRunSpeed(speed.run or speed.walk or 500)
+            end
             self.plyFrozen = nil
         end
 
@@ -398,6 +444,11 @@ function ENT:Think()
             puppet:SetPlaybackRate(rate)
         else
             --puppet:SetPlaybackRate(1)
+        end
+        if pk_pills.convars.admin_debug_formtablethinkfunc and pk_pills.convars.admin_debug_formtablethinkfunc:GetBool() then
+            if self.formTable.think then
+                self.formTable.think.func(ply, self, self.formTable.think)
+            end
         end
 
         --print(puppet:GetCycle())
@@ -491,22 +542,84 @@ function ENT:Think()
                 --self:PillDie()
                 ply:Kill()
             else
-                ply:TakeDamage(self.formTable.damageFromWater)
+                if pk_pills.convars.admin_debug_oldwaterdamage and pk_pills.convars.admin_debug_oldwaterdamage:GetBool() then
+                    ply:TakeDamage(self.formTable.damageFromWater)
+                else
+                    ply:TakeDamage(1)
+                end
                 --TODO APPLY DAMAGE
             end
         end
 
         --tick attack
-        if ply:KeyDown(IN_ATTACK) and self.formTable.attack and self.formTable.attack.mode == "tick" then
-            self.formTable.attack.func(ply, self, self.formTable.attack)
+        if ply:KeyDown(IN_ATTACK) and self.formTable.attack and self.formTable.attack.mode == "tick" and self.CanAttack == true then
+            if pk_pills.convars.admin_attackschangespeed and pk_pills.convars.admin_attackschangespeed:GetBool() then
+                if not self.cooldownTimer or CurTime() > self.cooldownTimer then
+                    local originalRunSpeed = ply:GetRunSpeed()
+                    local originalWalkSpeed = ply:GetWalkSpeed()
+
+
+                    ply:Freeze(true)
+                    print("POAWDOWDALDAWLDLWA")
+                    self.cooldownTimer = CurTime() + 2
+
+                    -- Call the attack function
+                    self.formTable.attack.func(ply, self, self.formTable.attack)
+                    ply:SetRunSpeed(20)
+                    ply:SetWalkSpeed(10)
+                    
+                    self:SetRunSpeed(20)
+                    self:SetWalkSpeed(10)//2
+                    timer.Simple(1.7, function()
+                        ply:SetRunSpeed(originalRunSpeed)
+                        ply:SetWalkSpeed(originalWalkSpeed)
+                        self.cooldownTimer = nil  -- Reset the cooldown timer
+                    end)
+
+                end
+            else
+                self.formTable.attack.func(ply, self, self.formTable.attack)
+            end
         end
 
-        if ply:KeyDown(IN_ATTACK2) and self.formTable.attack2 and self.formTable.attack2.mode == "tick" then
-            self.formTable.attack2.func(ply, self, self.formTable.attack2)
+        if ply:KeyDown(IN_ATTACK2) and self.formTable.attack2 and self.formTable.attack2.mode == "tick" /*and !ply:KeyDown(IN_DUCK)*/  then
+             self.formTable.attack2.func(ply, self, self.formTable.attack2)
+        end
+		
+        --climbing from wall
+        if pk_pills.convars.admin_wallclimb and pk_pills.convars.admin_wallclimb:GetBool() then
+            if ply:KeyDown(IN_ATTACK2) /*and ply:KeyDown(IN_DUCK)*/ then
+                local start= ply:GetPos()+Vector(0,0,10)
+                local dir= ply:GetAimVector()
+                dir.z= 0
+                dir:Normalize()
+
+                local tracedata = {}
+                tracedata.start = start
+                tracedata.endpos = start+dir*20
+                tracedata.filter = ply
+                tracedata.mins = Vector(-8,-8,-8)
+                tracedata.maxs = Vector(8,8,8)
+
+                if util.TraceHull(tracedata).Hit then
+                    if ply:IsOnGround() then
+                        ply:SetVelocity(Vector(0,0,300)) -- TODO: put this in new formtable for climbing when I learn how to do that
+                        -- if self.formTable.printName == "Creation" and "pill_creationr" then -- reference
+                        --     ply:SetVelocity(Vector(0,0,310))
+                        -- end
+                    //	ent:PillAnim("crouch_walk")
+                    end
+                    ply:SetLocalVelocity(Vector(0,0,200)) -- TODO: put this in new formtable for climbing when I learn how to do that
+                    -- if self.formTable.printName == "Creation" and "pill_creationr" then -- reference
+                    --     ply:SetVelocity(Vector(0,0,210))
+                    -- end
+                    //ent:PillAnimTick("crouch_walk")
+                end
+            end
         end
 
         --auto attack
-        if ply:KeyDown(IN_ATTACK) and self.formTable.attack and self.formTable.attack.mode == "auto" then
+        if ply:KeyDown(IN_ATTACK) and self.formTable.attack and self.formTable.attack.mode == "auto" and self.CanAttack == true then
             if not self.formTable.aim then
                 self:PillLoopSound("attack")
             else
@@ -514,14 +627,37 @@ function ENT:Think()
             end
 
             if (not self.lastAttack or (self.formTable.attack.interval or self.formTable.attack.delay) < CurTime() - self.lastAttack) then
-                self.formTable.attack.func(ply, self, self.formTable.attack)
+                if pk_pills.convars.admin_attackschangespeed and pk_pills.convars.admin_attackschangespeed:GetBool() then
+                    if not self.cooldownTimer or CurTime() > self.cooldownTimer then
+                        local originalRunSpeed = ply:GetRunSpeed()
+                        local originalWalkSpeed = ply:GetWalkSpeed()
+
+                        ply:Freeze(true)
+                        self.cooldownTimer = CurTime() + 2
+
+                        -- Call the attack function
+                        self.formTable.attack.func(ply, self, self.formTable.attack)
+                        ply:SetRunSpeed(20)
+                        ply:SetWalkSpeed(10)
+                        
+                        self:SetRunSpeed(20)
+                        self:SetWalkSpeed(10)//2
+                        timer.Simple(1.7, function()
+                            ply:SetRunSpeed(originalRunSpeed)
+                            ply:SetWalkSpeed(originalWalkSpeed)
+                            self.cooldownTimer = nil  -- Reset the cooldown timer
+                        end)
+                    end
+                else
+                    self.formTable.attack.func(ply, self, self.formTable.attack)
+                end
                 self.lastAttack = CurTime()
             end
         else
             self:PillLoopStop("attack")
         end
 
-        if ply:KeyDown(IN_ATTACK2) and self.formTable.attack2 and self.formTable.attack2.mode == "auto" then
+        if ply:KeyDown(IN_ATTACK2) and self.formTable.attack2 and self.formTable.attack2.mode == "auto" /*and !ply:KeyDown(IN_DUCK)*/  then
             if not self.formTable.aim then
                 self:PillLoopSound("attack2")
             else
@@ -537,23 +673,78 @@ function ENT:Think()
         end
 
         --charge
-        if self:GetChargeTime() ~= 0 then
-            if ply:OnGround() then
-                local charge = self.formTable.charge
-                local angs = ply:EyeAngles()
-                self:PillAnimTick("charge_loop")
-                local hit_ent = ply:TraceHullAttack(ply:EyePos(), ply:EyePos() + angs:Forward() * 100, Vector(-20, -20, -20), Vector(20, 20, 20), charge.dmg, DMG_CRUSH, 1, true)
-
-                if IsValid(hit_ent) then
-                    self:PillAnim("charge_hit", true)
-                    self:PillGesture("charge_hit")
-                    self:PillSound("charge_hit")
+        if pk_pills.convars.admin_debug_oldcharge and pk_pills.convars.admin_debug_oldcharge:GetBool() then
+            if self:GetChargeTime() ~= 0 then
+                if ply:OnGround() then
+                    local charge = self.formTable.charge
+                    local angs = ply:EyeAngles()
+                    self:PillAnimTick("charge_loop")
+                    local hit_ent = ply:TraceHullAttack(ply:EyePos(), ply:EyePos() + angs:Forward() * 100, Vector(-20, -20, -20), Vector(20, 20, 20), charge.dmg, DMG_CRUSH, 1, true)
+                    if IsValid(hit_ent) then
+                        self:PillAnim("charge_hit", true)
+                        self:PillGesture("charge_hit")
+                        self:PillSound("charge_hit")
+                        self:SetChargeTime(0)
+                        self:PillLoopStop("charge")
+                    end
+                else
                     self:SetChargeTime(0)
                     self:PillLoopStop("charge")
                 end
-            else
-                self:SetChargeTime(0)
-                self:PillLoopStop("charge")
+            end
+        else
+            if self:GetChargeTime() ~= 0 then
+                if ply:OnGround() then
+                    local charge = self.formTable.charge
+                    local angs = ply:EyeAngles()
+                    self:PillAnimTick("charge_loop")
+
+                    -- Set up a trace to check for wall collisions
+                    local trace = util.TraceLine({
+                        start = ply:EyePos(),
+                        endpos = ply:EyePos() + angs:Forward() * 50,
+                        filter = ply
+                    })
+
+                    local hit_ent = ply:TraceHullAttack(ply:EyePos(), ply:EyePos() + angs:Forward() * 50, Vector(-20, -20, -20), Vector(20, 20, 20), charge.dmg, DMG_CRUSH, 1, true)
+
+                    if IsValid(hit_ent) and hit_ent:IsPlayer() then
+                        print("DIDCHARGEA")
+                        
+                    elseif IsValid(hit_ent) then
+                        if hit_ent:IsPlayer() and hit_ent:GetNWBool("InPill") == true then
+                        
+                        else
+                        
+                        self:SetChargeTime(0)
+                        
+                        end
+                    end
+            
+                    -- Check if the trace hit a world surface
+                    if trace.HitWorld then
+                        print("Hit a wall")
+                        self:SetChargeTime(0)
+                        self:PillSound("charge", false)
+                        self:PillAnim("splat") 
+                        self:PillSound("splat")
+                        self:PillLoopStop("charge")
+                        self:PillLoopStop("chase")
+                        self:StopSound("rush")
+                        self:StopSound(self.formTable.sounds.rush)
+                        self:StopSound("chase")
+                        -- Freeze the pill for a few seconds
+                        ply:Freeze(true)
+                        timer.Simple(3, function()
+                            if IsValid(self) then
+                                ply:Freeze(false)
+                            end
+                        end)
+                    end
+                else
+                    self:SetChargeTime(0)
+                    self:PillLoopStop("charge")
+                end
             end
         end
 
@@ -592,7 +783,11 @@ function ENT:Think()
 
             if self.iscloaked then
                 if color.a > 0 then
-                    color.a = color.a - 5
+                    if pk_pills.convars.admin_fastcloak and pk_pills.convars.admin_fastcloak:GetBool() then
+                        color.a = color.a - 15
+                    else
+                        color.a = color.a - 5
+                    end
                     self:GetPuppet():SetColor(color)
                 end
             else
@@ -701,15 +896,35 @@ if SERVER then
             return
         end
 
-        if key == IN_ATTACK and self.formTable.attack and self.formTable.attack.mode == "trigger" then
-            self.formTable.attack.func(ply, self, self.formTable.attack)
+        if key == IN_ATTACK and self.formTable.attack and self.formTable.attack.mode == "trigger" and self.CanAttack == true then
+            if pk_pills.convars.admin_attackschangespeed and pk_pills.convars.admin_attackschangespeed:GetBool() then
+                if not self.cooldownTimer or CurTime() > self.cooldownTimer then
+                    local originalRunSpeed = ply:GetRunSpeed()
+                    local originalWalkSpeed = ply:GetWalkSpeed()
+
+                    self.cooldownTimer = CurTime() + 2
+
+                    -- Call the attack function
+                    self.formTable.attack.func(ply, self, self.formTable.attack)
+                    ply:SetRunSpeed(200)
+                    ply:SetWalkSpeed(100)
+
+                    timer.Simple(1.7, function()
+                        ply:SetRunSpeed(originalRunSpeed)
+                        ply:SetWalkSpeed(originalWalkSpeed)
+                        self.cooldownTimer = nil  -- Reset the cooldown timer
+                    end)
+                end
+            else
+                self.formTable.attack.func(ply, self, self.formTable.attack)
+            end
         end
 
-        if key == IN_ATTACK2 and self.formTable.attack2 and self.formTable.attack2.mode == "trigger" then
+        if key == IN_ATTACK2 and self.formTable.attack2 and self.formTable.attack2.mode == "trigger" /*and !ply:KeyDown(IN_DUCK)*/ then
             self.formTable.attack2.func(ply, self, self.formTable.attack2)
         end
 
-        if key == IN_RELOAD and self.formTable.reload then
+        if key == IN_RELOAD and self.formTable.reload and self.CanAttack2 == true then
             self.formTable.reload(ply, self)
         end
 
@@ -785,11 +1000,16 @@ if SERVER then
 		self:Remove()
 		self.dead=true
 	end]]
-    function ENT:PillAnim(name, freeze)
+    function ENT:PillAnim(name, freeze, freeze2)
         self.anim = name
         self.animStart = true
         self.animFreeze = true
+		if freeze2 == true then
+		    self.animFreeze = false
+		
+		end
     end
+
 
     function ENT:PillAnimTick(name)
         self.tickAnim = name
@@ -809,13 +1029,19 @@ if SERVER then
     end
 
     function ENT:PillChargeAttack()
-        if not self:GetPillUser():OnGround() or self.burrowed then return end
+        if not pk_pills.convars.admin_debug_oldcharge and not pk_pills.convars.admin_debug_oldcharge:GetBool() then
+            if not self:GetPillUser():OnGround() or self.burrowed then return end
+        end
         self:PillAnim("charge_start", true)
         self:PillSound("charge_start")
 
         local function doStart()
             if not IsValid(self) then return end
-            self:SetChargeTime(CurTime())
+            if pk_pills.convars.admin_debug_oldcharge and pk_pills.convars.admin_debug_oldcharge:GetBool() then
+                self:SetChargeTime(CurTime())
+            else
+                self:SetChargeTime(CurTime() + 3)
+            end
             local angs = self:GetPillUser():EyeAngles()
             angs.p = 0
             self:SetChargeAngs(angs)
@@ -852,7 +1078,12 @@ function ENT:PillSound(name, bulk)
 
     if isstring(s) then
         if bulk then
-            sound.Play(s, self:GetPos(), self.formTable.sounds[name .. "_level"] or (name == "step" and 75 or 100), self.formTable.sounds[name .. "_pitch"] or 100, 1)
+            if pk_pills.convars.admin_debug_oldbulksound and pk_pills.convars.admin_debug_oldbulksound:GetBool() then
+                sound.Play(s, self:GetPos(), self.formTable.sounds[name .. "_level"] or (name == "step" and 75 or 100), self.formTable.sounds[name .. "_pitch"] or 100, 1)
+            else
+                self:EmitSound(s, self.formTable.sounds[name .. "_level"] or (name == "step" and 75 or 100), 100, 1)
+                //sound.Play(s, self:GetPos(), 80, 100, 1)    
+            end
         else
             self:EmitSound(s, self.formTable.sounds[name .. "_level"] or (name == "step" and 75 or 100), self.formTable.sounds[name .. "_pitch"] or 100)
         end
@@ -883,9 +1114,11 @@ function ENT:PillLoopSound(name, volume, pitch)
 end
 
 function ENT:PillLoopStop(name)
-    if not self.loopingSounds[name] then return end
-    local s = self.loopingSounds[name]
-    s:FadeOut(.1)
+    if pk_pills.convars.admin_debug_pillloopstop and pk_pills.convars.admin_debug_pillloopstop:GetBool() then
+        if not self.loopingSounds[name] then return end
+        local s = self.loopingSounds[name]
+        s:FadeOut(.1)
+    end
 end
 
 function ENT:PillLoopStopAll()

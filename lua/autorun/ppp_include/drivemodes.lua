@@ -35,6 +35,7 @@ pk_pills.registerDrive("roll", {
     end,
     key = function(ply, ent, options, key)
         if key == IN_JUMP and options.jump then
+            print("DIDJUMP")
             local shouldJump = false
 
             if (ent:GetMoveType() == MOVETYPE_NONE) then
@@ -50,7 +51,9 @@ pk_pills.registerDrive("roll", {
             end
 
             if shouldJump then
-                ent:GetPhysicsObject():ApplyForceCenter(Vector(0, 0, options.jump))
+                if pk_pills.convars.admin_drivemoderolljump and pk_pills.convars.admin_drivemoderolljump:GetBool() then
+                    ent:GetPhysicsObject():ApplyForceCenter(Vector(0, 0, options.jump))
+                end
                 ent:PillSound("jump")
             end
         elseif key == IN_DUCK and options.burrow and ent:GetMoveType() == MOVETYPE_VPHYSICS then

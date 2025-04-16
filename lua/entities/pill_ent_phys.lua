@@ -389,6 +389,7 @@ else
 
             if not self.lastAttack2 or self.formTable.attack2.delay < CurTime() - self.lastAttack2 then
                 self.formTable.attack2.func(ply, self, self.formTable.attack2)
+
                 self.lastAttack2 = CurTime()
             end
         else
@@ -411,6 +412,31 @@ else
 
         if key == IN_ATTACK2 and self.formTable.attack2 and self.formTable.attack2.mode == "trigger" then
             self.formTable.attack2.func(ply, self, self.formTable.attack2)
+        end
+		
+        if pk_pills.convars.admin_debug_attack2tracedata and pk_pills.convars.admin_debug_attack2tracedata:GetBool() then
+            if key == IN_ATTACK2  then
+                                local start= ply:GetPos()+Vector(0,0,10)
+                    local dir= ply:GetAimVector()
+                    dir.z= 0
+                    dir:Normalize()
+
+                    local tracedata = {}
+                    tracedata.start = start
+                    tracedata.endpos = start+dir*20
+                    tracedata.filter = ply
+                    tracedata.mins = Vector(-8,-8,-8)
+                    tracedata.maxs = Vector(8,8,8)
+
+                    if util.TraceHull(tracedata).Hit then
+                        if ply:IsOnGround() then
+                            ply:SetVelocity(Vector(0,0,300))
+                            //self:PillAnim("crouch_walk")
+                        end
+                        ply:SetLocalVelocity(Vector(0,0,200))
+                        //self:PillAnimTick("crouch_walk")
+                    end
+            end
         end
 
         if key == IN_RELOAD and self.formTable.reload then

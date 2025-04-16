@@ -92,13 +92,6 @@ function getPacks()
     return packString
 end
 
-local error_color = Color(255, 90, 90)
-local function errorMsg(...)
-    --if SERVER then ErrorNoHalt("ERROR: ", ..., "\n") end
-    Msg("[PPP] ")
-    return MsgC(error_color, "ERROR: ", ..., "\n")
-end
-
 -- Pill Registration
 local forms = {}
 
@@ -457,18 +450,21 @@ if CLIENT then
             -- Create the container panel
             self.SpawnPanel = vgui.Create("DPanel", ctrl)
             self.SpawnPanel:SetVisible(false)
+
             local checkbox_thirdperson = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
             checkbox_thirdperson:SetPos(20, 20)
             checkbox_thirdperson:SetText("Thirdperson")
             checkbox_thirdperson:SetDark(true)
             checkbox_thirdperson:SetConVar("pk_pill_cl_thirdperson")
             checkbox_thirdperson:SizeToContents()
+
             local checkbox_hidehud = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
             checkbox_hidehud:SetPos(20, 40)
             checkbox_hidehud:SetText("Hide HUD")
             checkbox_hidehud:SetDark(true)
             checkbox_hidehud:SetConVar("pk_pill_cl_hidehud")
             checkbox_hidehud:SizeToContents()
+
             local button_exit = vgui.Create("DButton", self.SpawnPanel)
             button_exit:SetText("Exit Pill")
             button_exit:SizeToContents()
@@ -508,6 +504,7 @@ if CLIENT then
             checkbox_admin_restrict:SizeToContents()
             checkbox_admin_restrict.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_restrict.Button.DoClick = AdminClick
+
             local checkbox_admin_anyweapons = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
             checkbox_admin_anyweapons:SetPos(20, 160)
             checkbox_admin_anyweapons:SetText("Allow Use of Any Weapon with Pills")
@@ -516,14 +513,179 @@ if CLIENT then
             checkbox_admin_anyweapons:SizeToContents()
             checkbox_admin_anyweapons.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_anyweapons.Button.DoClick = AdminClick
+
+            local checkbox_admin_delayattack = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_delayattack:SetPos(20, 180)
+            checkbox_admin_delayattack:SetText("Disallow attacks on pill entry for some time")
+            checkbox_admin_delayattack:SetTooltip("Helps prevent accidentally killing your friends right away")
+            checkbox_admin_delayattack:SetDark(true)
+            checkbox_admin_delayattack:SetConVar("pk_pill_admin_delayattack")
+            checkbox_admin_delayattack:SizeToContents()
+            checkbox_admin_delayattack.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_delayattack.Button.DoClick = AdminClick
+
+            local checkbox_admin_drivemoderolljump = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_drivemoderolljump:SetPos(20, 200)
+            checkbox_admin_drivemoderolljump:SetText("Allow entity physics object to have a force center jump under the 'roll' drive mode")
+            checkbox_admin_drivemoderolljump:SetDark(true)
+            checkbox_admin_drivemoderolljump:SetConVar("pk_pill_admin_drivemoderolljump")
+            checkbox_admin_drivemoderolljump:SizeToContents()
+            checkbox_admin_drivemoderolljump.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_drivemoderolljump.Button.DoClick = AdminClick
+
+            local checkbox_admin_globalspeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_globalspeed:SetPos(20, 220)
+            checkbox_admin_globalspeed:SetText("Set all pill walk/run speeds to the same value")
+            checkbox_admin_globalspeed:SetTooltip("Usually takes effect in 6 seconds to compensate for initialization")
+            checkbox_admin_globalspeed:SetDark(true)
+            checkbox_admin_globalspeed:SetConVar("pk_pill_admin_globalspeed")
+            checkbox_admin_globalspeed:SizeToContents()
+            checkbox_admin_globalspeed.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_globalspeed.Button.DoClick = AdminClick
+
+            local checkbox_admin_globalcrouchwalkspeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_globalcrouchwalkspeed:SetPos(20, 240)
+            checkbox_admin_globalcrouchwalkspeed:SetText("Set all pill crouch walk speeds to the same value")
+            checkbox_admin_globalcrouchwalkspeed:SetDark(true)
+            checkbox_admin_globalcrouchwalkspeed:SetConVar("pk_pill_admin_globalcrouchwalkspeed")
+            checkbox_admin_globalcrouchwalkspeed:SizeToContents()
+            checkbox_admin_globalcrouchwalkspeed.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_globalcrouchwalkspeed.Button.DoClick = AdminClick
+
+            local checkbox_admin_globaljumppower = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_globaljumppower:SetPos(20, 260)
+            checkbox_admin_globaljumppower:SetText("Set all pill jump powers to the same value")
+            checkbox_admin_globaljumppower:SetDark(true)
+            checkbox_admin_globaljumppower:SetConVar("pk_pill_admin_globaljumppower")
+            checkbox_admin_globaljumppower:SizeToContents()
+            checkbox_admin_globaljumppower.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_globaljumppower.Button.DoClick = AdminClick
+
+            local checkbox_admin_attackschangespeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_attackschangespeed:SetPos(20, 280)
+            checkbox_admin_attackschangespeed:SetText("Make attacks change pill speed")
+            checkbox_admin_attackschangespeed:SetDark(true)
+            checkbox_admin_attackschangespeed:SetConVar("pk_pill_admin_attackschangespeed")
+            checkbox_admin_attackschangespeed:SizeToContents()
+            checkbox_admin_attackschangespeed.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_attackschangespeed.Button.DoClick = AdminClick
+
+            local checkbox_admin_wallclimb = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_wallclimb:SetPos(20, 300)
+            checkbox_admin_wallclimb:SetText("Allow pills to climb walls")
+            checkbox_admin_wallclimb:SetDark(true)
+            checkbox_admin_wallclimb:SetConVar("pk_pill_admin_wallclimb")
+            checkbox_admin_wallclimb:SizeToContents()
+            checkbox_admin_wallclimb.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_wallclimb.Button.DoClick = AdminClick
+
+            local checkbox_admin_fastcloak = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_fastcloak:SetPos(20, 320)
+            checkbox_admin_fastcloak:SetText("Faster cloaking")
+            checkbox_admin_fastcloak:SetDark(true)
+            checkbox_admin_fastcloak:SetConVar("pk_pill_admin_fastcloak")
+            checkbox_admin_fastcloak:SizeToContents()
+            checkbox_admin_fastcloak.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_fastcloak.Button.DoClick = AdminClick
+
             local button_exit_2 = vgui.Create("DButton", self.SpawnPanel)
             button_exit_2:SetText("Force Exit Pill")
             button_exit_2:SizeToContents()
-            button_exit_2:SetPos(20, 180)
-
+            button_exit_2:SetPos(20, 340)
             button_exit_2.DoClick = function()
                 RunConsoleCommand("pk_pill_restore_force")
             end
+
+            local heading_debug = vgui.Create("DLabel", self.SpawnPanel)
+            heading_debug:SetPos(20, 640)
+            heading_debug:SetText("Debug Settings")
+            heading_debug:SetFont("DermaLarge")
+            heading_debug:SetColor(Color(153, 0, 0))
+            heading_debug:SizeToContents()
+
+            local checkbox_admin_debug_animfreezespeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_animfreezespeed:SetPos(20, 680)
+            checkbox_admin_debug_animfreezespeed:SetText("[DEBUG] Set speed after animFreeze or plyFrozen")
+            checkbox_admin_debug_animfreezespeed:SetDark(true)
+            checkbox_admin_debug_animfreezespeed:SetConVar("pk_pill_admin_debug_animfreezespeed")
+            checkbox_admin_debug_animfreezespeed:SizeToContents()
+            checkbox_admin_debug_animfreezespeed.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_animfreezespeed.Button.DoClick = AdminClick
+
+            local checkbox_admin_debug_formtablethinkfunc = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_formtablethinkfunc:SetPos(20, 700)
+            checkbox_admin_debug_formtablethinkfunc:SetText("[DEBUG] Extra formTable.think.func")
+            checkbox_admin_debug_formtablethinkfunc:SetDark(true)
+            checkbox_admin_debug_formtablethinkfunc:SetConVar("pk_pill_admin_debug_formtablethinkfunc")
+            checkbox_admin_debug_formtablethinkfunc:SizeToContents()
+            checkbox_admin_debug_formtablethinkfunc.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_formtablethinkfunc.Button.DoClick = AdminClick
+
+            local checkbox_admin_debug_oldwaterdamage = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_oldwaterdamage:SetPos(20, 720)
+            checkbox_admin_debug_oldwaterdamage:SetText("[DEBUG] Old damageFromWater logic")
+            checkbox_admin_debug_oldwaterdamage:SetDark(true)
+            checkbox_admin_debug_oldwaterdamage:SetConVar("pk_pill_admin_debug_oldwaterdamage")
+            checkbox_admin_debug_oldwaterdamage:SizeToContents()
+            checkbox_admin_debug_oldwaterdamage.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_oldwaterdamage.Button.DoClick = AdminClick
+
+            local checkbox_admin_debug_oldcharge = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_oldcharge:SetPos(20, 740)
+            checkbox_admin_debug_oldcharge:SetText("[DEBUG] Use the old charge logic")
+            checkbox_admin_debug_oldcharge:SetTooltip("Best used with the pill loop stop debug option")
+            checkbox_admin_debug_oldcharge:SetDark(true)
+            checkbox_admin_debug_oldcharge:SetConVar("pk_pill_admin_debug_oldcharge")
+            checkbox_admin_debug_oldcharge:SizeToContents()
+            checkbox_admin_debug_oldcharge.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_oldcharge.Button.DoClick = AdminClick
+
+            local checkbox_admin_debug_oldbulksound = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_oldbulksound:SetPos(20, 760)
+            checkbox_admin_debug_oldbulksound:SetText("[DEBUG] Use the old bulk sound logic")
+            checkbox_admin_debug_oldbulksound:SetDark(true)
+            checkbox_admin_debug_oldbulksound:SetConVar("pk_pill_admin_debug_oldbulksound")
+            checkbox_admin_debug_oldbulksound:SizeToContents()
+            checkbox_admin_debug_oldbulksound.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_oldbulksound.Button.DoClick = AdminClick
+
+            local checkbox_admin_debug_pillloopstop = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_pillloopstop:SetPos(20, 780)
+            checkbox_admin_debug_pillloopstop:SetText("[DEBUG] Additional functionality to make pill loop sounds stop")
+            checkbox_admin_debug_pillloopstop:SetTooltip("Best used when the old charge logic is enabled")
+            checkbox_admin_debug_pillloopstop:SetDark(true)
+            checkbox_admin_debug_pillloopstop:SetConVar("pk_pill_admin_debug_pillloopstop")
+            checkbox_admin_debug_pillloopstop:SizeToContents()
+            checkbox_admin_debug_pillloopstop.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_pillloopstop.Button.DoClick = AdminClick
+
+            -- checkbox_admin_debug_oldcharge.Button.DoClick = function(selfBtn)
+            --     local newVal = not selfBtn:GetChecked()
+            --     selfBtn:SetChecked(newVal)
+            --     RunConsoleCommand("pk_pill_admin_debug_oldcharge", newVal and "1" or "0")
+
+            --     checkbox_admin_debug_pillloopstop.Button:SetChecked(newVal)
+            --     RunConsoleCommand("pk_pill_admin_debug_pillloopstop", newVal and "1" or "0")
+
+            --     if AdminClick then AdminClick(selfBtn) end
+            -- end
+
+            -- checkbox_admin_debug_oldcharge.Button.ConVarChanged = function(selfBtn, val)
+            --     local boolVal = val == "1"
+            --     checkbox_admin_debug_pillloopstop.Button:SetChecked(boolVal)
+            --     RunConsoleCommand("pk_pill_admin_debug_pillloopstop", boolVal and "1" or "0")
+
+            --     if AdminConVarChanged then AdminConVarChanged(selfBtn, val) end
+            -- end
+
+            local checkbox_admin_debug_attack2tracedata = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_debug_attack2tracedata:SetPos(20, 800)
+            checkbox_admin_debug_attack2tracedata:SetText("[DEBUG] Entity physics tracedata when using attack2")
+            checkbox_admin_debug_attack2tracedata:SetDark(true)
+            checkbox_admin_debug_attack2tracedata:SetConVar("pk_pill_admin_debug_attack2tracedata")
+            checkbox_admin_debug_attack2tracedata:SizeToContents()
+            checkbox_admin_debug_attack2tracedata.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_debug_attack2tracedata.Button.DoClick = AdminClick
         end
 
         node_settings.DoClick = function(self)
@@ -1022,7 +1184,7 @@ if SERVER then
 --		local ent = playerMap[ply]
 --		if IsValid(ent) then
 --			//if ent.formTable.stepSize then
---
+--				
 --			//end
 --			return 100
 --		end
@@ -1159,7 +1321,8 @@ hook.Add("SetupMove", "pk_pill_movemod", function(ply, mv, cmd)
             if ent:GetChargeTime() + .1 < CurTime() and vel:Length() < charge.vel * .8 then
                 print("uncharge")
                 ent:SetChargeTime(0)
-                ent:PillLoopStop("charge")
+                ent:PillLoopStopAll()
+                -- ent:PillLoopStop("charge")
             else
                 local angs = ent:GetChargeAngs()
                 ply:SetEyeAngles(angs)
