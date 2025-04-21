@@ -436,9 +436,9 @@ if CLIENT then
         searchResultsContainer:SetVisible(false)
         searchResultsContainer:SetTriggerSpawnlistChange(false)
 
-        local searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
-        searchHeader:SetText("Press Enter to search")
-        searchResultsContainer:Add(searchHeader)
+        -- local searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
+        -- searchHeader:SetText("Press Enter to search")
+        -- searchResultsContainer:Add(searchHeader)
 
         local function PerformSearch(searchText)
             searchResultsContainer:Clear()
@@ -448,14 +448,18 @@ if CLIENT then
 
             -- Recreate header to avoid errors
             searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
+            searchHeader:DockMargin(0, -4, 0, 0) -- failed attempt at fixing header
+            searchHeader:SetTall(0) -- failed attempt at fixing header
+            searchHeader:SetHeight(0) -- failed attempt at fixing header
             searchResultsContainer:Add(searchHeader)
 
             if searchText == "" or searchText == nil then
                 searchHeader:SetText("Press Enter to search")
-                if lastRealPanel then
-                    oldSwitchPanel(ctrl, lastRealPanel)
+                if not searchResultsContainer:IsVisible() then
+                    lastRealPanel = ctrl.currentPanel
+                    oldSwitchPanel(ctrl, searchResultsContainer)
+                    searchResultsContainer:SetVisible(true)
                 end
-                searchResultsContainer:SetVisible(false)
                 return
             end
 
@@ -478,10 +482,12 @@ if CLIENT then
                 spawnmenu.CreateContentIcon(item.type, searchResultsContainer, item)
             end
 
-            if not searchResultsContainer:IsVisible() then
-                lastRealPanel = ctrl.currentPanel
-                oldSwitchPanel(ctrl, searchResultsContainer)
-                searchResultsContainer:SetVisible(true)
+            searchEntry:RequestFocus()
+        end
+
+        searchEntry.OnFocusChanged = function(self, gainedFocus)
+            if gainedFocus then
+                PerformSearch(self:GetText())
             end
         end
 
