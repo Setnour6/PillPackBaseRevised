@@ -550,6 +550,8 @@ if CLIENT then
 
         local tree = ctrl.ContentNavBar.Tree
         local node_morphs = tree:AddNode("Categories", "icon16/folder.png")
+        local node_base = node_morphs:AddNode("Base", "icon16/folder.png")
+        local node_installed = node_morphs:AddNode("Installed", "icon16/package.png")
         local node_settings = tree:AddNode("Settings", "icon16/cog.png")
 
         node_settings.DoPopulate = function(self)
@@ -807,9 +809,15 @@ if CLIENT then
         makeBrowserNode(node_bug, "https://steamcommunity.com/workshop/filedetails/discussion/950845673/1836811737987005083/")
         local node_drednot = tree:AddNode("Play Drednot.io", "icon16/joystick.png")
         makeBrowserNode(node_drednot, "https://drednot.io")
+        local node_github = tree:AddNode("Github Repository", "icon16/world_link.png")
+        makeBrowserNode(node_github, "https://github.com/Setnour6/PillPackBaseRevised/")
 
         for _, pack in pairs(packs) do
-            local node = node_morphs:AddNode(isstring(pack.name) and pack.name or "", isstring(pack.icon) and pack.icon)
+            local parentNode = node_installed
+            if pack.name == "Half-Life 2" or pack.name == "Fun" or pack.name == "Jake" then
+                parentNode = node_base
+            end
+            local node = parentNode:AddNode(isstring(pack.name) and pack.name, isstring(pack.icon) and pack.icon)
 
             --[[if (istable(pack.name) || istable(pack.icon)) then
 				-- wew shitcode!
@@ -850,6 +858,8 @@ if CLIENT then
         end
 
         node_morphs:SetExpanded(true)
+        node_base:SetExpanded(true)
+        node_installed:SetExpanded(true)
 
         return ctrl
     end, "icon16/pill_go.png", 60)
