@@ -407,6 +407,114 @@ if CLIENT then
 
     spawnmenu.AddCreationTab("Pills", function()
         local ctrl = vgui.Create("SpawnmenuContentPanel")
+        local searchContainer = vgui.Create("DPanel", ctrl)
+        searchContainer:Dock(TOP)
+        searchContainer:SetTall(23)
+        searchContainer:DockMargin(0, 0, 0, 0)
+        searchContainer:SetPaintBackground(false)
+        searchContainer.Think = function(self)
+            self:SetWide(ctrl.ContentNavBar:GetWide())
+        end
+
+        local searchEntryContainer = vgui.Create("DPanel", searchContainer)
+        searchEntryContainer:Dock(FILL)
+        searchEntryContainer:SetPaintBackground(false)
+
+        local searchEntry = vgui.Create("DTextEntry", searchEntryContainer)
+        searchEntry:Dock(FILL)
+        searchEntry:SetWide(searchEntryContainer:GetWide())
+        searchEntry:SetTall(20)
+        searchEntry:SetPlaceholderText("Search...")
+        searchEntry:SetTooltip("Press Enter to search")
+        searchEntry:DockMargin(0, 0, 0, 3)
+        searchEntry:SetUpdateOnType(false)
+
+        local oldSwitchPanel = ctrl.SwitchPanel
+        local lastRealPanel = nil
+
+        local searchResultsContainer = vgui.Create("ContentContainer", ctrl)
+        searchResultsContainer:SetVisible(false)
+        searchResultsContainer:SetTriggerSpawnlistChange(false)
+
+        -- local searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
+        -- searchHeader:SetText("Press Enter to search")
+        -- searchResultsContainer:Add(searchHeader)
+
+        local function PerformSearch(searchText)
+            searchResultsContainer:Clear()
+            if IsValid(searchHeader) then
+                searchHeader:Remove()
+            end
+
+            -- Recreate header to avoid errors
+            searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
+            searchHeader:DockMargin(0, -4, 0, 0) -- failed attempt at fixing header
+            searchHeader:SetTall(0) -- failed attempt at fixing header
+            searchHeader:SetHeight(0) -- failed attempt at fixing header
+            searchResultsContainer:Add(searchHeader)
+
+            if searchText == "" or searchText == nil then
+                searchHeader:SetText("Press Enter to search")
+                if not searchResultsContainer:IsVisible() then
+                    lastRealPanel = ctrl.currentPanel
+                    oldSwitchPanel(ctrl, searchResultsContainer)
+                    searchResultsContainer:SetVisible(true)
+                end
+                return
+            end
+
+            local allPills = {}
+            for _, pack in pairs(packs) do
+                for _, item in pairs(pack.items) do
+                    if item.type == "pill" and string.find(
+                        string.lower(item.printName), 
+                        string.lower(searchText), 
+                        1, 
+                        true
+                    ) then
+                        table.insert(allPills, item)
+                    end
+                end
+            end
+            searchHeader:SetText(#allPills .. " Results for \""..searchText.."\"")
+
+            for _, item in SortedPairsByMemberValue(allPills, "printName") do
+                spawnmenu.CreateContentIcon(item.type, searchResultsContainer, item)
+            end
+
+            searchEntry:RequestFocus()
+        end
+
+        searchEntry.OnFocusChanged = function(self, gainedFocus)
+            if gainedFocus then
+                PerformSearch(self:GetText())
+            end
+        end
+
+        local searchIcon = vgui.Create("DImageButton", searchEntry)
+        searchIcon:Dock(RIGHT)
+        searchIcon:SetText( "" )
+        searchIcon:SetImage("icon16/magnifier.png")
+        searchIcon:SetSize(16, 16)
+        searchIcon:DockMargin(4, 2, 4, 2)
+        searchIcon:SetTooltip("Press to search")
+        searchIcon.DoClick = function()
+            PerformSearch(searchEntry:GetText())
+        end
+
+        searchEntryContainer.PerformLayout = function(self, w, h)
+            searchEntry:SetWide(w)
+        end
+        searchEntry.OnEnter = function(s)
+            PerformSearch(s:GetText())
+        end
+
+        function ctrl:SwitchPanel(panel)
+            if panel ~= searchResultsContainer then
+                lastRealPanel = panel
+            end
+            oldSwitchPanel(self, panel)
+        end
 
         local function makeHTMLnode(node, url)
             local html
