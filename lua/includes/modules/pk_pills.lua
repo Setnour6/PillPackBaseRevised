@@ -601,6 +601,16 @@ if CLIENT then
                 self:Toggle()
             end
 
+            local function AdminSetValue(self)
+                if not LocalPlayer():IsSuperAdmin() then
+                    surface.PlaySound("buttons/button10.wav")
+
+                    return
+                end
+
+                self:SetValue()
+            end
+
             local function AdminConVarChanged(self, val)
                 if (not self.m_strConVar) then return end
                 RunConsoleCommand("pk_pill_admin_set", string.sub(self.m_strConVar, 15), val)
@@ -624,8 +634,17 @@ if CLIENT then
             checkbox_admin_anyweapons.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_anyweapons.Button.DoClick = AdminClick
 
+            local checkbox_admin_allownoclip = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
+            checkbox_admin_allownoclip:SetPos(20, 180)
+            checkbox_admin_allownoclip:SetText("Allow the noclip button to be used to exit pills")
+            checkbox_admin_allownoclip:SetDark(true)
+            checkbox_admin_allownoclip:SetConVar("pk_pill_admin_allownoclip")
+            checkbox_admin_allownoclip:SizeToContents()
+            checkbox_admin_allownoclip.Button.ConVarChanged = AdminConVarChanged
+            checkbox_admin_allownoclip.Button.DoClick = AdminClick
+
             local checkbox_admin_delayattack = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_delayattack:SetPos(20, 180)
+            checkbox_admin_delayattack:SetPos(20, 200)
             checkbox_admin_delayattack:SetText("Disallow attacks on pill entry for some time")
             checkbox_admin_delayattack:SetTooltip("Helps prevent accidentally killing your friends right away")
             checkbox_admin_delayattack:SetDark(true)
@@ -635,7 +654,7 @@ if CLIENT then
             checkbox_admin_delayattack.Button.DoClick = AdminClick
 
             local checkbox_admin_drivemoderolljump = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_drivemoderolljump:SetPos(20, 200)
+            checkbox_admin_drivemoderolljump:SetPos(20, 220)
             checkbox_admin_drivemoderolljump:SetText("Allow entity physics object to have a force center jump under the 'roll' drive mode")
             checkbox_admin_drivemoderolljump:SetDark(true)
             checkbox_admin_drivemoderolljump:SetConVar("pk_pill_admin_drivemoderolljump")
@@ -644,7 +663,7 @@ if CLIENT then
             checkbox_admin_drivemoderolljump.Button.DoClick = AdminClick
 
             local checkbox_admin_globalspeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_globalspeed:SetPos(20, 220)
+            checkbox_admin_globalspeed:SetPos(20, 240)
             checkbox_admin_globalspeed:SetText("Set all pill walk/run speeds to the same value")
             checkbox_admin_globalspeed:SetTooltip("Usually takes effect in 6 seconds to compensate for initialization")
             checkbox_admin_globalspeed:SetDark(true)
@@ -653,8 +672,25 @@ if CLIENT then
             checkbox_admin_globalspeed.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_globalspeed.Button.DoClick = AdminClick
 
+            local numberwang_admin_globalspeedamount = vgui.Create("DNumberWang", self.SpawnPanel)
+            numberwang_admin_globalspeedamount:SetPos(40, 260)
+            numberwang_admin_globalspeedamount:SetValue(560)
+            numberwang_admin_globalspeedamount:SetTooltip("Amount of walk/run speed for all pills. Usually takes effect in 6 seconds to compensate for initialization")
+            numberwang_admin_globalspeedamount:SetMin(1)
+            numberwang_admin_globalspeedamount:SetMax(2000)
+            numberwang_admin_globalspeedamount:SetConVar("pk_pill_admin_globalspeedamount")
+            numberwang_admin_globalspeedamount:SizeToContents()
+            numberwang_admin_globalspeedamount:ConVarChanged(AdminConVarChanged)
+            numberwang_admin_globalspeedamount.OnValueChanged = AdminSetValue
+
+            local label_admin_globalspeedamount = vgui.Create("DLabel", self.SpawnPanel)
+            label_admin_globalspeedamount:SetPos(105, 263)
+            label_admin_globalspeedamount:SetText("Amount of walk/run speed for all pills")
+            label_admin_globalspeedamount:SetDark(true)
+            label_admin_globalspeedamount:SizeToContents()
+
             local checkbox_admin_globalcrouchwalkspeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_globalcrouchwalkspeed:SetPos(20, 240)
+            checkbox_admin_globalcrouchwalkspeed:SetPos(20, 280)
             checkbox_admin_globalcrouchwalkspeed:SetText("Set all pill crouch walk speeds to the same value")
             checkbox_admin_globalcrouchwalkspeed:SetDark(true)
             checkbox_admin_globalcrouchwalkspeed:SetConVar("pk_pill_admin_globalcrouchwalkspeed")
@@ -662,8 +698,25 @@ if CLIENT then
             checkbox_admin_globalcrouchwalkspeed.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_globalcrouchwalkspeed.Button.DoClick = AdminClick
 
+            local numberwang_admin_globalcrouchwalkspeedamount = vgui.Create("DNumberWang", self.SpawnPanel)
+            numberwang_admin_globalcrouchwalkspeedamount:SetPos(40, 300)
+            numberwang_admin_globalcrouchwalkspeedamount:SetValue(560)
+            numberwang_admin_globalcrouchwalkspeedamount:SetTooltip("Amount of crouch walk speed for all pills")
+            numberwang_admin_globalcrouchwalkspeedamount:SetMin(1)
+            numberwang_admin_globalcrouchwalkspeedamount:SetMax(2000)
+            numberwang_admin_globalcrouchwalkspeedamount:SetConVar("pk_pill_admin_globalcrouchwalkspeedamount")
+            numberwang_admin_globalcrouchwalkspeedamount:SizeToContents()
+            numberwang_admin_globalcrouchwalkspeedamount:ConVarChanged(AdminConVarChanged)
+            numberwang_admin_globalcrouchwalkspeedamount.OnValueChanged = AdminSetValue
+
+            local label_admin_globalcrouchwalkspeedamount = vgui.Create("DLabel", self.SpawnPanel)
+            label_admin_globalcrouchwalkspeedamount:SetPos(105, 303)
+            label_admin_globalcrouchwalkspeedamount:SetText("Amount of crouch walk speed for all pills")
+            label_admin_globalcrouchwalkspeedamount:SetDark(true)
+            label_admin_globalcrouchwalkspeedamount:SizeToContents()
+
             local checkbox_admin_globaljumppower = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_globaljumppower:SetPos(20, 260)
+            checkbox_admin_globaljumppower:SetPos(20, 320)
             checkbox_admin_globaljumppower:SetText("Set all pill jump powers to the same value")
             checkbox_admin_globaljumppower:SetDark(true)
             checkbox_admin_globaljumppower:SetConVar("pk_pill_admin_globaljumppower")
@@ -671,8 +724,25 @@ if CLIENT then
             checkbox_admin_globaljumppower.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_globaljumppower.Button.DoClick = AdminClick
 
+            local numberwang_admin_globaljumppoweramount = vgui.Create("DNumberWang", self.SpawnPanel)
+            numberwang_admin_globaljumppoweramount:SetPos(40, 340)
+            numberwang_admin_globaljumppoweramount:SetValue(4)
+            numberwang_admin_globaljumppoweramount:SetTooltip("Amount of jump power for all pills")
+            numberwang_admin_globaljumppoweramount:SetMin(1)
+            numberwang_admin_globaljumppoweramount:SetMax(100)
+            numberwang_admin_globaljumppoweramount:SetConVar("pk_pill_admin_globaljumppoweramount")
+            numberwang_admin_globaljumppoweramount:SizeToContents()
+            numberwang_admin_globaljumppoweramount:ConVarChanged(AdminConVarChanged)
+            numberwang_admin_globaljumppoweramount.OnValueChanged = AdminSetValue
+
+            local label_admin_globaljumppoweramount = vgui.Create("DLabel", self.SpawnPanel)
+            label_admin_globaljumppoweramount:SetPos(100, 343)
+            label_admin_globaljumppoweramount:SetText("Amount of jump power for all pills")
+            label_admin_globaljumppoweramount:SetDark(true)
+            label_admin_globaljumppoweramount:SizeToContents()
+
             local checkbox_admin_attackschangespeed = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_attackschangespeed:SetPos(20, 280)
+            checkbox_admin_attackschangespeed:SetPos(20, 360)
             checkbox_admin_attackschangespeed:SetText("Make attacks change pill speed")
             checkbox_admin_attackschangespeed:SetDark(true)
             checkbox_admin_attackschangespeed:SetConVar("pk_pill_admin_attackschangespeed")
@@ -681,7 +751,7 @@ if CLIENT then
             checkbox_admin_attackschangespeed.Button.DoClick = AdminClick
 
             local checkbox_admin_wallclimb = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_wallclimb:SetPos(20, 300)
+            checkbox_admin_wallclimb:SetPos(20, 380)
             checkbox_admin_wallclimb:SetText("Allow pills to climb walls")
             checkbox_admin_wallclimb:SetDark(true)
             checkbox_admin_wallclimb:SetConVar("pk_pill_admin_wallclimb")
@@ -690,7 +760,7 @@ if CLIENT then
             checkbox_admin_wallclimb.Button.DoClick = AdminClick
 
             local checkbox_admin_fastcloak = vgui.Create("DCheckBoxLabel", self.SpawnPanel)
-            checkbox_admin_fastcloak:SetPos(20, 320)
+            checkbox_admin_fastcloak:SetPos(20, 400)
             checkbox_admin_fastcloak:SetText("Faster cloaking")
             checkbox_admin_fastcloak:SetDark(true)
             checkbox_admin_fastcloak:SetConVar("pk_pill_admin_fastcloak")
@@ -698,10 +768,27 @@ if CLIENT then
             checkbox_admin_fastcloak.Button.ConVarChanged = AdminConVarChanged
             checkbox_admin_fastcloak.Button.DoClick = AdminClick
 
+            local numberwang_admin_fastcloakamount = vgui.Create("DNumberWang", self.SpawnPanel)
+            numberwang_admin_fastcloakamount:SetPos(40, 420)
+            numberwang_admin_fastcloakamount:SetValue(15)
+            numberwang_admin_fastcloakamount:SetTooltip("How fast in ticks do pills with cloaking abilities cloak for")
+            numberwang_admin_fastcloakamount:SetMin(1)
+            numberwang_admin_fastcloakamount:SetMax(255)
+            numberwang_admin_fastcloakamount:SetConVar("pk_pill_admin_fastcloakamount")
+            numberwang_admin_fastcloakamount:SizeToContents()
+            numberwang_admin_fastcloakamount:ConVarChanged(AdminConVarChanged)
+            numberwang_admin_fastcloakamount.OnValueChanged = AdminSetValue
+
+            local label_admin_fastcloakamount = vgui.Create("DLabel", self.SpawnPanel)
+            label_admin_fastcloakamount:SetPos(100, 423)
+            label_admin_fastcloakamount:SetText("How fast in ticks do pills with cloaking abilities cloak for")
+            label_admin_fastcloakamount:SetDark(true)
+            label_admin_fastcloakamount:SizeToContents()
+
             local button_exit_2 = vgui.Create("DButton", self.SpawnPanel)
             button_exit_2:SetText("Force Exit Pill")
             button_exit_2:SizeToContents()
-            button_exit_2:SetPos(20, 340)
+            button_exit_2:SetPos(20, 450)
             button_exit_2.DoClick = function()
                 RunConsoleCommand("pk_pill_restore_force")
             end

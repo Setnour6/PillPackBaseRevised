@@ -70,8 +70,8 @@ function ENT:Initialize()
             timer.Simple(6, function()
                 if ply:GetNWInt("InPill") == true then
                     realspeed = 540
-                    ply:SetRunSpeed( realspeed )
-                    ply:SetMaxSpeed( realspeed )
+                    ply:SetRunSpeed( pk_pills.convars.admin_globalspeedamount:GetInt() or realspeed )
+                    ply:SetMaxSpeed( pk_pills.convars.admin_globalspeedamount:GetInt() or realspeed )
                     ply:SetWalkSpeed( 140 )
                 end
             end )
@@ -85,26 +85,26 @@ function ENT:Initialize()
 
         if speed.ducked then
             if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
-                ply:SetCrouchedWalkSpeed(0.4)
+                ply:SetCrouchedWalkSpeed(pk_pills.convars.admin_globalcrouchwalkspeedamount:GetFloat() or 0.4)
             else
                 ply:SetCrouchedWalkSpeed(speed.ducked / (speed.walk or 200))
             end
         elseif duckBy == 0 then
             if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
-                ply:SetCrouchedWalkSpeed(0.4)
+                ply:SetCrouchedWalkSpeed(pk_pills.convars.admin_globalcrouchwalkspeedamount:GetFloat() or 0.4)
             else
                 ply:SetCrouchedWalkSpeed(1)
             end
         else
             if pk_pills.convars.admin_globalcrouchwalkspeed and pk_pills.convars.admin_globalcrouchwalkspeed:GetBool() then
-                ply:SetCrouchedWalkSpeed(0.4)
+                ply:SetCrouchedWalkSpeed(pk_pills.convars.admin_globalcrouchwalkspeedamount:GetFloat() or 0.4)
             else
                 ply:SetCrouchedWalkSpeed(.3)
             end
         end
 
         if pk_pills.convars.admin_globaljumppower and pk_pills.convars.admin_globaljumppower:GetBool() then
-            ply:SetJumpPower(4)
+            ply:SetJumpPower(pk_pills.convars.admin_globaljumppoweramount:GetInt() or 4)
         else
             ply:SetJumpPower(self.formTable.jumpPower or 200)
         end
@@ -784,7 +784,7 @@ function ENT:Think()
             if self.iscloaked then
                 if color.a > 0 then
                     if pk_pills.convars.admin_fastcloak and pk_pills.convars.admin_fastcloak:GetBool() then
-                        color.a = color.a - 15
+                        color.a = color.a - (pk_pills.convars.admin_fastcloakamount:GetInt() or 15)
                     else
                         color.a = color.a - 5
                     end
@@ -792,7 +792,11 @@ function ENT:Think()
                 end
             else
                 if color.a < 255 then
-                    color.a = color.a + 5
+                    if pk_pills.convars.admin_fastcloak and pk_pills.convars.admin_fastcloak:GetBool() then
+                        color.a = color.a + (pk_pills.convars.admin_fastcloakamount:GetInt() or 15)
+                    else
+                        color.a = color.a + 5
+                    end
                     self:GetPuppet():SetColor(color)
                 end
             end
