@@ -436,78 +436,99 @@ if CLIENT then
         searchResultsContainer:SetVisible(false)
         searchResultsContainer:SetTriggerSpawnlistChange(false)
 
+        local lastSearchText = nil
+        local lastSearchResults = {}
+        local searchHeader = nil
+
         -- local searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
         -- searchHeader:SetText("Press Enter to search")
         -- searchResultsContainer:Add(searchHeader)
 
-        local function PerformSearch(searchText)
-            searchResultsContainer:Clear()
-            if IsValid(searchHeader) then
-                searchHeader:Remove()
-            end
-
-            -- Recreate header to avoid errors
-            searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
-            searchHeader:DockMargin(0, -4, 0, 0) -- failed attempt at fixing header
-            searchHeader:SetTall(0) -- failed attempt at fixing header
-            searchHeader:SetHeight(0) -- failed attempt at fixing header
-            searchResultsContainer:Add(searchHeader)
-
-            if searchText == "" or searchText == nil then
-                searchHeader:SetText("Press Enter to search")
-                if not searchResultsContainer:IsVisible() then
-                    lastRealPanel = ctrl.currentPanel
-                    oldSwitchPanel(ctrl, searchResultsContainer)
-                    searchResultsContainer:SetVisible(true)
-                end
-                return
-            end
-
+        local function SearchForPills(searchText)
             local allPills = {}
             for _, pack in pairs(packs) do
                 for _, item in pairs(pack.items) do
                     if item.type == "pill" and string.find(
-                        string.lower(item.printName), 
-                        string.lower(searchText), 
-                        1, 
+                        string.lower(item.printName),
+                        string.lower(searchText),
+                        1,
                         true
                     ) then
                         table.insert(allPills, item)
                     end
                 end
             end
-            searchHeader:SetText(#allPills .. " Results for \""..searchText.."\"")
+            return allPills
+        end
 
-            for _, item in SortedPairsByMemberValue(allPills, "printName") do
-                spawnmenu.CreateContentIcon(item.type, searchResultsContainer, item)
+        local function UpdateSearchDisplay(searchText, results)
+            searchResultsContainer:Clear()
+            if IsValid(searchHeader) then
+                searchHeader:Remove()
             end
 
+            searchHeader = vgui.Create("ContentHeader", searchResultsContainer)
+            searchHeader:DockMargin(0, -4, 0, 0)
+            searchHeader:SetTall(0)
+            searchResultsContainer:Add(searchHeader)
+
+            if searchText == "" then
+                searchHeader:SetText("Press Enter to search")
+            else
+                searchHeader:SetText(#results .. " Results for \""..searchText.."\"")
+                for _, item in SortedPairsByMemberValue(results, "printName") do
+                    spawnmenu.CreateContentIcon(item.type, searchResultsContainer, item)
+                end
+            end
+
+            if not searchResultsContainer:IsVisible() then
+                lastRealPanel = ctrl.currentPanel
+                oldSwitchPanel(ctrl, searchResultsContainer)
+                searchResultsContainer:SetVisible(true)
+            end
+        end
+
+        local function PerformSearch()
+            local searchText = searchEntry:GetText() or ""
+            lastSearchText = searchText
+            lastSearchResults = SearchForPills(searchText)
+            UpdateSearchDisplay(searchText, lastSearchResults)
             searchEntry:RequestFocus()
         end
 
         searchEntry.OnFocusChanged = function(self, gainedFocus)
             if gainedFocus then
-                PerformSearch(self:GetText())
+                local currentText = self:GetText() or ""
+
+                if currentText ~= lastSearchText then
+                    if currentText == "" then
+                        UpdateSearchDisplay("", {})
+                    else
+                        UpdateSearchDisplay(currentText, {})
+                    end
+                else
+                    if not searchResultsContainer:IsVisible() then
+                        lastRealPanel = ctrl.currentPanel
+                        oldSwitchPanel(ctrl, searchResultsContainer)
+                        searchResultsContainer:SetVisible(true)
+                    end
+                end
             end
         end
 
         local searchIcon = vgui.Create("DImageButton", searchEntry)
         searchIcon:Dock(RIGHT)
-        searchIcon:SetText( "" )
+        searchIcon:SetText("")
         searchIcon:SetImage("icon16/magnifier.png")
         searchIcon:SetSize(16, 16)
         searchIcon:DockMargin(4, 2, 4, 2)
         searchIcon:SetTooltip("Press to search")
-        searchIcon.DoClick = function()
-            PerformSearch(searchEntry:GetText())
-        end
+        searchIcon.DoClick = PerformSearch
 
         searchEntryContainer.PerformLayout = function(self, w, h)
             searchEntry:SetWide(w)
         end
-        searchEntry.OnEnter = function(s)
-            PerformSearch(s:GetText())
-        end
+        searchEntry.OnEnter = PerformSearch
 
         function ctrl:SwitchPanel(panel)
             if panel ~= searchResultsContainer then
