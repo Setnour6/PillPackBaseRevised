@@ -17,10 +17,11 @@ In comparision from the enhanced pill pack base:
 
 # How to Contribute
 
-This assumes you know how Git and GitHub work and that you have experience with it.
+This assumes you know how Git and GitHub work and that you have experience with it, as well as assuming that you have Visual Studio Code.
 1. Fork this repository
 2. Add the repository to your `<GModInstallation>/garrysmod/addons` folder via `git clone`.
-3. Make changes to the code.
+3. Make changes to the code with the GLua extension installed (also use a Lua/GLua intellisense extension if you need it).
+	* Please make sure your code is readable and indented properly.
 4. Make a Pull Request detailing your features/proposals.
 5. Wait until your changes get added.
 

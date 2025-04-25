@@ -1,5 +1,8 @@
 [h2]Before subscribing, unsubscribe from all other pill pack bases (parakeet's, geozek and snazzy's enhanced, etc.)[/h2]
 This was made because of the opinionated lack of some potential and customizability of the pill pack bases on the workshop, hence why a revision was made.
+
+It's open-source on GitHub if anyone wants to help contribute to this addon: https://github.com/Setnour6/PillPackBaseRevised
+
 [h3]Features[/h3]
 In comparision from the enhanced pill pack base:
 [list]
