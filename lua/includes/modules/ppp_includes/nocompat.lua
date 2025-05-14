@@ -18,7 +18,7 @@ if CLIENT then
             for _, key in pairs(noclip_btns) do
                 if input.WasKeyPressed(key) then
                     timer.Simple(0, function()
-                        RunConsoleCommand("pk_pill_restore")
+                        //RunConsoleCommand("pk_pill_restore")
                     end)
 
                     break
