@@ -1,7 +1,7 @@
 # Revised Pill Pack Base
 Fork of Parakeet's Pill Pack with changes from Geozek & Snazzy's Enhanced Pill Pack and new changes from Dylansonfire and myself to improve the pill pack base experience.
 
-This was made because of the opinionated lack of some potential and customizability of the pill pack bases on the workshop, hence why a revision was made. Best of all, this is open-source so anyone can look at the codes and help work on this addon.
+This was made because of the opinionated lack of some potential and customizability of the pill pack bases on the workshop, hence why a revision was made. Best of all, the source is available so anyone can look at the codes and help work on this addon.
 
 Do NOT use this pack with Parakeet's pill pack base, nor with Geozek & Snazzy's enhanced pill base, as that will cause conflicts and lua errors.
 In other words, please uninstall other pill pack bases before installing this one.
