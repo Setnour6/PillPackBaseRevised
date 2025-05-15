@@ -65,7 +65,7 @@ function ENT:Initialize()
        // ply:SetRunSpeed(speed.run + 100 or speed.walk or 500)
 	    timer.Simple(6, function()
 		    if ply:GetNWInt("badguy") == true then     
-                    realspeed = 540 + PillRankSpeed(ply)	-- was 525 + pillrankspeed
+                    realspeed = 540
 			    ply:SetRunSpeed( realspeed ) 
 				ply:SetMaxSpeed( realspeed ) 
 				ply:SetWalkSpeed( 140 ) 
