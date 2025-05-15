@@ -127,9 +127,13 @@ end
 
 local function fixParent(name)
     local t = forms[name]
+    if t.parent == name then
+        print("Tried to self-inherit '" .. name .. "' pill! Please verify the parent value in this pill.")
+        return
+    end
     local t_parent = forms[t.parent]
 
-    if t_parent.parent then
+    if t_parent and t_parent.parent then
         fixParent(t.parent)
     end
 
