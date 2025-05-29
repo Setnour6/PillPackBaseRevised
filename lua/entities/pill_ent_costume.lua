@@ -15,7 +15,7 @@ function ENT:Initialize()
     self.formTable = pk_pills.getPillTable(self:GetPillForm())
     if pk_pills.convars.admin_delayattack and pk_pills.convars.admin_delayattack:GetBool() then
         timer.Simple(5, function() if IsValid(self) then self.CanAttack = true end end )
-        timer.Simple(30, function() if IsValid(self) then self.CanAttack2 = true end end )
+        timer.Simple(5, function() if IsValid(self) then self.CanAttack2 = true end end )
     else
         self.CanAttack = true
         self.CanAttack2 = true
